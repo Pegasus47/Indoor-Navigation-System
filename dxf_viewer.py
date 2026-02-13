@@ -68,7 +68,7 @@ class DXFViewer:
             print(f"✓ Found {len(self.layers)} layers: {self.layers}")
 
             # Get colours for each layer, throw error if more than 3 layers 
-            if(len(self.layers)>4):
+            if(len(self.layers)>10):
                 print("Cannot have more than 3 layers. Make sure its the right file")
                 quit()
             distinct_colors = self.get_layer_colours(len(self.layers))
@@ -144,6 +144,12 @@ class DXFViewer:
                         min_y = min(min_y, point[1])
                         max_y = max(max_y, point[1])
                     entity_count += 1
+                    #to make sure that the waypoints are included in the calculation
+                elif entity.dxftype() == 'INSERT': 
+                    pos = entity.dxf.insert
+                    min_x, max_x = min(min_x, pos[0]), max(max_x, pos[0])
+                    min_y, max_y = min(min_y, pos[1]), max(max_y, pos[1])
+                    entity_count += 1
             except:
                 pass
 
@@ -214,6 +220,18 @@ class DXFViewer:
                 except:
                     pass
 
+            elif entity.dxftype() == 'INSERT':
+                # Convert CAD coordinates to screen pixels
+                pos = self.world_to_screen(entity.dxf.insert[0], entity.dxf.insert[1])
+                
+                # Draw a visual marker (a filled circle) for the waypoint
+                pygame.draw.circle(self.screen, color, pos, 6) # slightly larger than lines
+                
+                # Extract and display the attribute text (e.g., "Node_A")
+                for attrib in entity.attribs:
+                    if attrib.dxf.tag in ['ID', 'NAME']:
+                        text_surface = self.small_font.render(attrib.dxf.text, True, constants.WHITE)
+                        self.screen.blit(text_surface, (pos[0] + 10, pos[1] - 10))
         except Exception as e:
             pass
 
@@ -238,7 +256,7 @@ class DXFViewer:
 
         y_offset = 90 - self.scroll_offset
 
-        for layer in enumerate(self.layers):
+        for layer in self.layers:
             if y_offset > constants.SCREEN_HEIGHT:
                 break
             if y_offset < 40:
