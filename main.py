@@ -1,6 +1,7 @@
 import sys 
 import os 
 import dxf_viewer as dxf
+import nav_engine 
 def main():
     if len(sys.argv) < 2:
         print("Usage: python3 dxf_viewer.py <filename.dxf>")
@@ -15,6 +16,12 @@ def main():
         sys.exit(1)
 
     viewer = dxf.DXFViewer(filename)
+
+    engine = nav_engine.NavigationEngine(snapping_threshold=2.0)
+    engine.build_graph(viewer.get_entities())
+    
+    #print("Adjacency List:", engine.graph)
+
     viewer.run()
 
 if __name__ == "__main__":

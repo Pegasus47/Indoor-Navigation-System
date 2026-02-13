@@ -234,6 +234,9 @@ class DXFViewer:
                         self.screen.blit(text_surface, (pos[0] + 10, pos[1] - 10))
         except Exception as e:
             pass
+    
+    def get_entities(self):
+        return self.entities_by_layer
 
     def draw_sidebar(self):
         """Draw the layer selection sidebar"""
